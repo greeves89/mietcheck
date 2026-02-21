@@ -8,13 +8,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy app first
+COPY . .
+
 # Install Python deps
-COPY pyproject.toml .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -e .
-
-# Copy app
-COPY . .
 
 # Create PDF storage directory
 RUN mkdir -p /app/pdfs
