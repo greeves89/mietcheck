@@ -1,0 +1,132 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Home,
+  FileSearch,
+  PlusCircle,
+  MessageSquare,
+  Settings,
+  Shield,
+  CheckSquare,
+  Sun,
+  Moon,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/theme-provider";
+import { useAuthStore } from "@/lib/auth";
+import { UserMenu } from "./user-menu";
+
+const navItems = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/contracts", label: "Mietverhältnisse", icon: Home },
+  { href: "/bills", label: "Abrechnungen", icon: FileSearch },
+  { href: "/bills/new", label: "Neue Prüfung", icon: PlusCircle },
+  { href: "/feedback", label: "Feedback", icon: MessageSquare },
+  { href: "/settings", label: "Einstellungen", icon: Settings },
+];
+
+export function Sidebar() {
+  const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
+  const user = useAuthStore((s) => s.user);
+
+  return (
+    <aside className="fixed left-0 top-0 z-40 h-screen w-[260px] border-r border-border bg-card/50 backdrop-blur-xl flex flex-col">
+      {/* Logo */}
+      <div className="flex h-14 items-center gap-3 px-5 border-b border-border">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-500/20">
+          <CheckSquare className="h-4 w-4 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-semibold tracking-tight">MietCheck</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-muted-foreground">
+              {user?.subscription_tier === "premium" ? "Premium" : "Free"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 space-y-0.5 p-3 pt-4 overflow-y-auto">
+        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+          Navigation
+        </p>
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            item.href === "/bills"
+              ? pathname === "/bills" || (pathname.startsWith("/bills/") && pathname !== "/bills/new")
+              : pathname.startsWith(item.href) && !(item.href === "/dashboard" && pathname !== "/dashboard");
+          const exactActive = pathname === item.href || (item.href !== "/bills/new" && pathname.startsWith(item.href) && item.href !== "/dashboard") || pathname === item.href;
+          const active = item.href === "/dashboard" ? pathname === "/dashboard" : item.href === "/bills" ? (pathname === "/bills" || (pathname.startsWith("/bills/") && pathname !== "/bills/new")) : pathname.startsWith(item.href);
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-150",
+                active
+                  ? "bg-accent text-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+              )}
+            >
+              <Icon
+                className={cn(
+                  "h-4 w-4 transition-colors",
+                  active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                )}
+              />
+              {item.label}
+              {active && (
+                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(59,130,246,0.5)]" />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Bottom */}
+      <div className="border-t border-border p-3 space-y-1">
+        {user?.role === "admin" && (
+          <Link
+            href="/admin"
+            className={cn(
+              "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-150",
+              pathname.startsWith("/admin")
+                ? "bg-accent text-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+            )}
+          >
+            <Shield
+              className={cn(
+                "h-4 w-4 transition-colors",
+                pathname.startsWith("/admin") ? "text-amber-500" : "text-muted-foreground group-hover:text-amber-500"
+              )}
+            />
+            Admin
+            {pathname.startsWith("/admin") && (
+              <div className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
+            )}
+          </Link>
+        )}
+
+        <button
+          onClick={toggleTheme}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-all duration-150"
+        >
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          <span className="text-[13px] font-medium">
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          </span>
+        </button>
+
+        <UserMenu />
+      </div>
+    </aside>
+  );
+}
