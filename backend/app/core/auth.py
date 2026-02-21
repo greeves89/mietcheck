@@ -21,7 +21,7 @@ async def get_current_user(
         token = credentials.credentials
     else:
         # Try cookie
-        token = request.cookies.get("access_token")
+        token = request.cookies.get("mc_access_token")
 
     if not token:
         raise HTTPException(
