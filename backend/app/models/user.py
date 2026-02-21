@@ -24,6 +24,8 @@ class User(Base):
     # Subscription
     subscription_tier: Mapped[str] = mapped_column(String(20), default="free", nullable=False)
     subscription_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    stripe_customer_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    stripe_subscription_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)

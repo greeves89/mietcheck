@@ -86,6 +86,17 @@ export const api = {
   // GDPR
   exportData: () => fetch(`${API_BASE}/gdpr/export`, { credentials: "include" }),
   deleteAccount: () => request<void>("/gdpr/delete-account", { method: "DELETE" }),
+
+  // Stripe
+  createCheckoutSession: () =>
+    request<{ checkout_url: string; session_id: string }>("/stripe/create-checkout-session", {
+      method: "POST",
+    }),
+  cancelSubscription: () =>
+    request<{ message: string }>("/stripe/cancel-subscription", {
+      method: "POST",
+    }),
+  getSubscriptionStatus: () => request<any>("/stripe/subscription-status"),
 };
 
 export { ApiError };

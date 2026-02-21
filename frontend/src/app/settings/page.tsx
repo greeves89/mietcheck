@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Save, Loader2, AlertTriangle, CheckCircle2, Trash2, Download } from "lucide-react";
+import { Save, Loader2, AlertTriangle, CheckCircle2, Trash2, Download, Crown, Check, X } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useAuthStore } from "@/lib/auth";
@@ -22,6 +22,8 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [upgrading, setUpgrading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +64,34 @@ export default function SettingsPage() {
       alert("Fehler beim Löschen");
     }
   };
+
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    setError("");
+    try {
+      const data = await api.createCheckoutSession();
+      window.location.href = data.checkout_url;
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Fehler beim Starten des Checkout");
+      setUpgrading(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!confirm("Abonnement wirklich kündigen? Es bleibt bis zum Ende der Laufzeit aktiv.")) return;
+    setCancelling(true);
+    setError("");
+    try {
+      await api.cancelSubscription();
+      alert("Ihr Abonnement wird am Ende der Laufzeit gekündigt.");
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Fehler beim Kündigen");
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const isPremium = user?.subscription_tier === "premium";
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -127,22 +157,68 @@ export default function SettingsPage() {
             {/* Subscription */}
             <div className="rounded-xl border border-foreground/[0.06] bg-card/80 backdrop-blur-sm p-5">
               <h3 className="text-sm font-semibold mb-3">Abonnement</h3>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm font-medium capitalize">
-                    {user?.subscription_tier === "premium" ? "Premium" : "Free"}
-                  </p>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-sm font-medium capitalize">
+                      {isPremium ? "Premium" : "Free"}
+                    </p>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isPremium ? 'bg-amber-500/20 text-amber-400' : 'bg-foreground/10 text-muted-foreground'}`}>
+                      {isPremium ? "Aktiv" : "Kostenlos"}
+                    </span>
+                  </div>
                   <p className="text-[12px] text-muted-foreground">
-                    {user?.subscription_tier === "premium"
+                    {isPremium
                       ? "Unbegrenzte Prüfungen, Widerspruchsbriefe, PDF-Export"
                       : "1 kostenlose Prüfung pro Jahr"}
                   </p>
                 </div>
-                {user?.subscription_tier === "free" && (
-                  <button className="rounded-xl bg-amber-500 px-4 py-2 text-[13px] font-semibold text-black hover:bg-amber-400 transition-colors">
-                    Upgrade (0,99€/Monat)
-                  </button>
-                )}
+                <div className="flex gap-2">
+                  {!isPremium && (
+                    <button
+                      onClick={handleUpgrade}
+                      disabled={upgrading}
+                      className="flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-[13px] font-semibold text-black hover:bg-amber-400 disabled:opacity-50 transition-colors"
+                    >
+                      {upgrading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crown className="h-3.5 w-3.5" />}
+                      {upgrading ? "Weiterleitung..." : "Upgrade (0,99€/Monat)"}
+                    </button>
+                  )}
+                  {isPremium && (
+                    <button
+                      onClick={handleCancelSubscription}
+                      disabled={cancelling}
+                      className="flex items-center gap-1.5 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-[13px] text-red-400 hover:bg-red-500/20 disabled:opacity-50 transition-all"
+                    >
+                      {cancelling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                      {cancelling ? "Kündige..." : "Abonnement kündigen"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Features comparison */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl border border-foreground/[0.06] bg-foreground/[0.02]">
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Free</p>
+                  <ul className="space-y-1.5">
+                    {["1 Prüfung pro Jahr", "Grundauswertung"].map((f) => (
+                      <li key={f} className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                        <Check className="h-3 w-3 flex-shrink-0" /> {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className={`p-3 rounded-xl border ${isPremium ? 'border-amber-500/30 bg-amber-500/5' : 'border-foreground/[0.06] bg-foreground/[0.02]'}`}>
+                  <p className="text-[11px] font-semibold text-amber-400 uppercase tracking-wide mb-2">Premium – 0,99€/Monat</p>
+                  <ul className="space-y-1.5">
+                    {["Unbegrenzte Prüfungen", "Widerspruchsbriefe", "PDF-Export", "KI-Analyse", "Prioritäts-Support"].map((f) => (
+                      <li key={f} className="flex items-center gap-1.5 text-[12px] text-foreground">
+                        <Check className="h-3 w-3 text-amber-400 flex-shrink-0" /> {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
 

@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     # PDF storage
     PDF_STORAGE_PATH: str = "/app/pdfs"
 
+    # Stripe
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_PRICE_ID: str = ""
+    STRIPE_SUCCESS_URL: str = "http://localhost/dashboard?upgraded=true"
+    STRIPE_CANCEL_URL: str = "http://localhost/settings?cancelled=true"
+
     class Config:
         env_file = ".env"
         case_sensitive = True
