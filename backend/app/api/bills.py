@@ -21,21 +21,27 @@ router = APIRouter(prefix="/bills", tags=["bills"])
 FREE_TIER_LIMIT = 1
 
 
-async def _check_free_tier(user: User, db: AsyncSession):
-    """Free users limited to 1 bill per year."""
+async def _check_free_tier(user: User, db: AsyncSession, exclude_bill_id: int | None = None):
+    """Free users limited to 1 bill check per year."""
     if user.is_premium or user.role == "admin":
         return
     current_year = date.today().year
-    result = await db.execute(
+    query = (
         select(func.count())
         .select_from(UtilityBill)
-        .where(UtilityBill.user_id == user.id)
+        .where(
+            UtilityBill.user_id == user.id,
+            UtilityBill.billing_year == current_year,
+        )
     )
+    if exclude_bill_id is not None:
+        query = query.where(UtilityBill.id != exclude_bill_id)
+    result = await db.execute(query)
     count = result.scalar()
     if count >= FREE_TIER_LIMIT:
         raise HTTPException(
             status_code=402,
-            detail=f"Free tier allows {FREE_TIER_LIMIT} bill check. Upgrade to Premium for unlimited checks.",
+            detail=f"Free tier allows {FREE_TIER_LIMIT} bill check per year. Upgrade to Premium for unlimited checks.",
         )
 
 
@@ -210,7 +216,9 @@ async def recheck_bill(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Re-run all checks on an existing bill."""
+    """Re-run all checks on an existing bill. Free tier: only allowed once per year."""
+    await _check_free_tier(current_user, db, exclude_bill_id=bill_id)
+
     result = await db.execute(
         select(UtilityBill)
         .where(UtilityBill.id == bill_id, UtilityBill.user_id == current_user.id)
