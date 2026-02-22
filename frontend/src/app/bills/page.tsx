@@ -6,6 +6,7 @@ import { PlusCircle, FileSearch, Filter } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { BillCard } from "@/components/bills/bill-card";
+import { YearComparison } from "@/components/bills/year-comparison";
 import { useBills } from "@/hooks/use-bills";
 
 export default function BillsPage() {
@@ -55,11 +56,14 @@ export default function BillsPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
-              {bills.map((bill, i) => (
-                <BillCard key={bill.id} bill={bill} index={i} />
-              ))}
-            </div>
+            <>
+              <YearComparison bills={bills} />
+              <div className="space-y-3">
+                {bills.map((bill, i) => (
+                  <BillCard key={bill.id} bill={bill} index={i} />
+                ))}
+              </div>
+            </>
           )}
         </main>
       </div>
