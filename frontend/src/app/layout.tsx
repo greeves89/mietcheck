@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { cn } from "@/lib/utils";
+import CookieConsent from "@/components/cookie-consent";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={cn(GeistSans.variable, GeistMono.variable, "min-h-screen bg-background font-sans antialiased")}>
         <ThemeProvider>
           <AuthGuard>{children}</AuthGuard>
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>
