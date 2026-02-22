@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from '@/hooks/use-toast';
 import { motion } from "framer-motion";
 import { MessageSquare, Clock, CheckCircle2, XCircle, Send, Loader2 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -40,7 +41,7 @@ export default function AdminFeedbackPage() {
       setResponding(null);
       setResponse("");
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Fehler");
+      toast(e instanceof ApiError ? e.message : "Fehler beim Speichern", 'error')
     } finally {
       setIsSaving(false);
     }

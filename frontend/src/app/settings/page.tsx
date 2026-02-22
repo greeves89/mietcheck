@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from '@/hooks/use-toast';
 import { motion } from "framer-motion";
 import { Save, Loader2, AlertTriangle, CheckCircle2, Trash2, Download, Crown, Check, X, Lock } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -94,7 +95,7 @@ export default function SettingsPage() {
       logout();
       router.push("/login");
     } catch (e) {
-      alert("Fehler beim Löschen");
+      toast("Fehler beim Löschen des Kontos", 'error')
     }
   };
 
@@ -116,7 +117,7 @@ export default function SettingsPage() {
     setError("");
     try {
       await api.cancelSubscription();
-      alert("Ihr Abonnement wird am Ende der Laufzeit gekündigt.");
+      toast("Ihr Abonnement wird am Ende der Laufzeit gekündigt.", 'success')
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Fehler beim Kündigen");
     } finally {

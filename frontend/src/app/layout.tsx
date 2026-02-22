@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { cn } from "@/lib/utils";
 import CookieConsent from "@/components/cookie-consent";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <AuthGuard>{children}</AuthGuard>
           <CookieConsent />
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

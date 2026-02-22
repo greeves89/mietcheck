@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from '@/hooks/use-toast';
 import { motion } from "framer-motion";
 import { Users, Shield, Crown, Ban, Check, Edit2, X, Loader2 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -42,7 +43,7 @@ export default function AdminUsersPage() {
       setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
       setEditUser(null);
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Fehler");
+      toast(e instanceof ApiError ? e.message : "Fehler beim Speichern", 'error')
     } finally {
       setIsSaving(false);
     }
