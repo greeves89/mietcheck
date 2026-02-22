@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth";
 import { api } from "@/lib/api";
 
-const PUBLIC_ROUTES = ["/login", "/register"];
+const PUBLIC_ROUTES = ["/login", "/register", "/impressum", "/datenschutz", "/agb", "/forgot-password", "/reset-password", "/verify-email"];
+const LANDING_ROUTE = "/";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading, setUser, setLoading } = useAuthStore();
@@ -25,6 +26,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [setUser]);
 
   const isPublic = PUBLIC_ROUTES.some((r) => pathname.startsWith(r));
+  const isLanding = pathname === LANDING_ROUTE;
 
   if (isLoading) {
     return (
@@ -35,6 +37,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  // Landing page: logged-in users go to dashboard, others see landing
+  if (isLanding) {
+    if (user && typeof window !== "undefined") {
+      router.replace("/dashboard");
+      return null;
+    }
+    return <>{children}</>;
   }
 
   if (!user && !isPublic) {
