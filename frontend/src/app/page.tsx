@@ -2,6 +2,9 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/lib/auth'
 import {
   CheckSquare, FileSearch, AlertTriangle, FileText, BarChart3, Shield, Star,
   Check, ArrowRight, Mail, Calculator
@@ -38,6 +41,13 @@ const pricing = [
 ]
 
 export default function HomePage() {
+  const router = useRouter()
+  const { user } = useAuthStore()
+
+  useEffect(() => {
+    if (user) router.push('/dashboard')
+  }, [user, router])
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

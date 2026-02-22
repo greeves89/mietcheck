@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Save, Loader2, AlertTriangle, CheckCircle2, Trash2, Download, Crown, Check, X } from "lucide-react";
+import { Save, Loader2, AlertTriangle, CheckCircle2, Trash2, Download, Crown, Check, X, Lock } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useAuthStore } from "@/lib/auth";
@@ -24,6 +24,39 @@ export default function SettingsPage() {
   const [error, setError] = useState("");
   const [upgrading, setUpgrading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== newPasswordConfirm) {
+      setPasswordError("Die Passwörter stimmen nicht überein");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPasswordError("Neues Passwort muss mindestens 8 Zeichen lang sein");
+      return;
+    }
+    setIsChangingPassword(true);
+    setPasswordError("");
+    setPasswordSuccess(false);
+    try {
+      await api.changePassword(currentPassword, newPassword);
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setNewPasswordConfirm("");
+      setTimeout(() => setPasswordSuccess(false), 3000);
+    } catch (e) {
+      setPasswordError(e instanceof ApiError ? e.message : "Fehler beim Ändern des Passworts");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,6 +181,80 @@ export default function SettingsPage() {
                     <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-1.5 text-[13px] text-emerald-400">
                       <CheckCircle2 className="h-4 w-4" />
                       Gespeichert
+                    </motion.span>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            {/* Password Change */}
+            <div className="rounded-xl border border-foreground/[0.06] bg-card/80 backdrop-blur-sm p-5">
+              <h3 className="text-sm font-semibold mb-4">Passwort ändern</h3>
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className={labelClass}>Aktuelles Passwort</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={e => setCurrentPassword(e.target.value)}
+                      required
+                      className={`${inputClass} pl-9`}
+                      placeholder="Aktuelles Passwort"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Neues Passwort</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      className={`${inputClass} pl-9`}
+                      placeholder="Mindestens 8 Zeichen"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Neues Passwort bestätigen</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={newPasswordConfirm}
+                      onChange={e => setNewPasswordConfirm(e.target.value)}
+                      required
+                      className={`${inputClass} pl-9`}
+                      placeholder="Passwort wiederholen"
+                    />
+                  </div>
+                </div>
+
+                {passwordError && (
+                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3">
+                    <AlertTriangle className="h-4 w-4 text-red-400" />
+                    <p className="text-[13px] text-red-400">{passwordError}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 disabled:opacity-70 transition-all"
+                  >
+                    {isChangingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+                    Passwort ändern
+                  </button>
+                  {passwordSuccess && (
+                    <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-1.5 text-[13px] text-emerald-400">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Passwort geändert
                     </motion.span>
                   )}
                 </div>
