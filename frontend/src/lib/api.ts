@@ -153,6 +153,14 @@ export const api = {
   analysiereBetriebskosten: (data: any) =>
     request<any>("/betriebskosten-assistent/analyse", { method: "POST", body: JSON.stringify(data) }),
 
+  // Betriebskostenspiegel
+  getBetriebskostenspiegelStaedte: () => request<any[]>("/betriebskostenspiegel/staedte"),
+  getBetriebskostenspiegelVergleich: (stadt: string, eigeneKostenQm?: number) => {
+    const params = new URLSearchParams({ stadt });
+    if (eigeneKostenQm !== undefined) params.set("eigene_kosten_qm", String(eigeneKostenQm));
+    return request<any>(`/betriebskostenspiegel/vergleich?${params}`);
+  },
+
   // Mietrecht-Checks
   getMietrechtStaedte: () => request<any[]>("/mietrecht/staedte"),
   checkMietwucher: (data: any) =>
