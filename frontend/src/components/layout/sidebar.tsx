@@ -13,6 +13,7 @@ import {
   CheckSquare,
   Sun,
   Moon,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/theme-provider";
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/contracts", label: "Mietverhältnisse", icon: Home },
   { href: "/bills", label: "Abrechnungen", icon: FileSearch },
   { href: "/bills/new", label: "Neue Prüfung", icon: PlusCircle },
+  { href: "/mietpreisbremse", label: "Mietpreisbremse", icon: Scale },
   { href: "/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/settings", label: "Einstellungen", icon: Settings },
 ];

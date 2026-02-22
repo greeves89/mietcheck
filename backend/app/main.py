@@ -4,7 +4,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 from app.config import settings
 from app.api import auth, users, contracts, bills, objections, feedback, admin, gdpr
-from app.api import stripe_api
+from app.api import stripe_api, mietpreisbremse
 
 
 @asynccontextmanager
@@ -43,6 +43,7 @@ app.include_router(feedback.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(gdpr.router, prefix="/api")
 app.include_router(stripe_api.router, prefix="/api")
+app.include_router(mietpreisbremse.router, prefix="/api")
 
 
 @app.get("/api/health")

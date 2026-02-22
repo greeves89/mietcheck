@@ -123,6 +123,11 @@ export const api = {
   updateAdminFeedback: (id: number, data: any) => request<any>(`/admin/feedback/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   testSmtp: (toEmail: string) => request<any>(`/admin/smtp/test?to_email=${encodeURIComponent(toEmail)}`, { method: "POST" }),
 
+  // Mietpreisbremse
+  checkMietpreisbremse: (data: any) =>
+    request<any>("/mietpreisbremse/check", { method: "POST", body: JSON.stringify(data) }),
+  getMietpreisbremseStaedte: () => request<any[]>("/mietpreisbremse/cities"),
+
   // GDPR
   exportData: () => fetch(`${API_BASE}/gdpr/export`, { credentials: "include" }),
   deleteAccount: () => request<void>("/gdpr/delete-account", { method: "DELETE" }),
