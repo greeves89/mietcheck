@@ -128,6 +128,20 @@ export const api = {
     request<any>("/mietpreisbremse/check", { method: "POST", body: JSON.stringify(data) }),
   getMietpreisbremseStaedte: () => request<any[]>("/mietpreisbremse/cities"),
 
+  // Betriebskosten-Assistent
+  getBetriebskostenArten: () => request<any>("/betriebskosten-assistent/arten"),
+  analysiereBetriebskosten: (data: any) =>
+    request<any>("/betriebskosten-assistent/analyse", { method: "POST", body: JSON.stringify(data) }),
+
+  // Mietrecht-Checks
+  getMietrechtStaedte: () => request<any[]>("/mietrecht/staedte"),
+  checkMietwucher: (data: any) =>
+    request<any>("/mietrecht/mietwucher-check", { method: "POST", body: JSON.stringify(data) }),
+  checkMieterhoehung: (data: any) =>
+    request<any>("/mietrecht/mieterhoehung-check", { method: "POST", body: JSON.stringify(data) }),
+  checkKaution: (data: any) =>
+    request<any>("/mietrecht/kaution-check", { method: "POST", body: JSON.stringify(data) }),
+
   // GDPR
   exportData: () => fetch(`${API_BASE}/gdpr/export`, { credentials: "include" }),
   deleteAccount: () => request<void>("/gdpr/delete-account", { method: "DELETE" }),

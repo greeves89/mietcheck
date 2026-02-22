@@ -14,6 +14,8 @@ import {
   Sun,
   Moon,
   Scale,
+  BookOpen,
+  Gavel,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/theme-provider";
@@ -26,6 +28,8 @@ const navItems = [
   { href: "/bills", label: "Abrechnungen", icon: FileSearch },
   { href: "/bills/new", label: "Neue Prüfung", icon: PlusCircle },
   { href: "/mietpreisbremse", label: "Mietpreisbremse", icon: Scale },
+  { href: "/betriebskosten-assistent", label: "BK-Assistent", icon: BookOpen },
+  { href: "/mietrecht", label: "Mietrecht-Checks", icon: Gavel },
   { href: "/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/settings", label: "Einstellungen", icon: Settings },
 ];
