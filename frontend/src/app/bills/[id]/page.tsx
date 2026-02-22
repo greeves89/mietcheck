@@ -167,6 +167,17 @@ export default function BillDetailPage() {
                 <RefreshCw className={cn("h-3.5 w-3.5", isRechecking && "animate-spin")} />
                 Erneut prüfen
               </button>
+              {bill.check_results.length > 0 && (
+                <a
+                  href={api.getBillReportUrl(id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Prüfbericht PDF
+                </a>
+              )}
               {isPremium && (
                 <button
                   onClick={() => setShowObjectionModal(true)}

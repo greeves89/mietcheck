@@ -101,6 +101,7 @@ export const api = {
   },
   deleteBillDocument: (id: number) => request<void>(`/bills/${id}/upload`, { method: "DELETE" }),
   getBillDocumentUrl: (id: number) => `${API_BASE}/bills/${id}/document`,
+  getBillReportUrl: (id: number) => `${API_BASE}/bills/${id}/report`,
 
   // Objections
   createObjection: (billId: number, reasons: string[]) =>

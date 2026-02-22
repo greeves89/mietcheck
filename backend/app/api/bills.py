@@ -381,3 +381,54 @@ async def download_document(
         bill.document_path,
         filename=os.path.basename(bill.document_path),
     )
+
+
+@router.get("/{bill_id}/report")
+async def download_check_report(
+    bill_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate and download a PDF check report for a bill."""
+    from app.services.pdf_service import generate_check_report_pdf
+    from app.models.rental_contract import RentalContract
+
+    result = await db.execute(
+        select(UtilityBill)
+        .where(UtilityBill.id == bill_id, UtilityBill.user_id == current_user.id)
+        .options(
+            selectinload(UtilityBill.positions),
+            selectinload(UtilityBill.check_results),
+        )
+    )
+    bill = result.scalar_one_or_none()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Bill not found")
+
+    contract_result = await db.execute(
+        select(RentalContract).where(RentalContract.id == bill.contract_id)
+    )
+    contract = contract_result.scalar_one_or_none()
+    property_address = contract.property_address if contract else "Unbekannt"
+
+    try:
+        pdf_path = generate_check_report_pdf(
+            tenant_name=current_user.name,
+            property_address=property_address,
+            billing_year=bill.billing_year,
+            billing_period_start=str(bill.billing_period_start),
+            billing_period_end=str(bill.billing_period_end),
+            check_score=bill.check_score,
+            check_results=bill.check_results,
+            positions=bill.positions,
+            total_costs=str(bill.total_costs) if bill.total_costs else None,
+            result_amount=str(bill.result_amount) if bill.result_amount else None,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF-Generierung fehlgeschlagen: {e}")
+
+    return FileResponse(
+        pdf_path,
+        filename=f"pruefbericht_{bill.billing_year}.pdf",
+        media_type="application/pdf",
+    )
