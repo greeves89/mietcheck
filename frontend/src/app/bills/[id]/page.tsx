@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trash2, RefreshCw, FileText, Download,
-  Calendar, Euro, AlertTriangle, CheckCircle2, Loader2
+  Calendar, Euro, AlertTriangle, CheckCircle2, Loader2,
+  Upload, X, Paperclip
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -38,6 +39,9 @@ export default function BillDetailPage() {
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [isGeneratingLetter, setIsGeneratingLetter] = useState(false);
   const [letterError, setLetterError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [isDeletingDoc, setIsDeletingDoc] = useState(false);
 
   const handleDelete = async () => {
     if (!confirm("Abrechnung wirklich löschen?")) return;
@@ -78,6 +82,33 @@ export default function BillDetailPage() {
       setLetterError(e instanceof ApiError ? e.message : "Fehler beim Erstellen");
     } finally {
       setIsGeneratingLetter(false);
+    }
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    setUploadError("");
+    try {
+      await api.uploadBillDocument(id, file);
+      await reload();
+    } catch (err) {
+      setUploadError(err instanceof ApiError ? err.message : "Upload fehlgeschlagen");
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDeleteDoc = async () => {
+    if (!confirm("Dokument wirklich löschen?")) return;
+    setIsDeletingDoc(true);
+    try {
+      await api.deleteBillDocument(id);
+      await reload();
+    } finally {
+      setIsDeletingDoc(false);
     }
   };
 
@@ -204,6 +235,63 @@ export default function BillDetailPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Document Upload */}
+              <div className="rounded-xl border border-foreground/[0.06] bg-card/80 backdrop-blur-sm p-5">
+                <h3 className="text-sm font-semibold mb-3">Dokument</h3>
+                {bill.document_path ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 rounded-lg bg-muted/30 p-2.5">
+                      <Paperclip className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                      <span className="text-[12px] text-muted-foreground flex-1 truncate">
+                        {bill.document_path.split("/").pop()}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <a
+                        href={api.getBillDocumentUrl(id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-2 text-[12px] font-medium hover:bg-accent transition-colors"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Öffnen
+                      </a>
+                      <button
+                        onClick={handleDeleteDoc}
+                        disabled={isDeletingDoc}
+                        className="flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-[12px] font-medium text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                      >
+                        {isDeletingDoc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                    <label className="flex w-full items-center justify-center gap-1.5 cursor-pointer rounded-lg border border-dashed border-border px-3 py-2 text-[12px] text-muted-foreground hover:bg-accent/50 transition-colors">
+                      <Upload className="h-3.5 w-3.5" />
+                      Ersetzen
+                      <input type="file" accept=".pdf,image/jpeg,image/png,image/webp" className="sr-only" onChange={handleUpload} disabled={isUploading} />
+                    </label>
+                  </div>
+                ) : (
+                  <label className={cn(
+                    "flex flex-col items-center gap-2 cursor-pointer rounded-lg border border-dashed border-border p-5 text-center hover:bg-accent/50 transition-colors",
+                    isUploading && "opacity-50 pointer-events-none"
+                  )}>
+                    {isUploading ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Upload className="h-6 w-6 text-muted-foreground/50" />
+                    )}
+                    <span className="text-[12px] text-muted-foreground">
+                      {isUploading ? "Wird hochgeladen…" : "PDF oder Foto hochladen"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground/60">Max. 10 MB · PDF, JPEG, PNG</span>
+                    <input type="file" accept=".pdf,image/jpeg,image/png,image/webp" className="sr-only" onChange={handleUpload} disabled={isUploading} />
+                  </label>
+                )}
+                {uploadError && (
+                  <p className="mt-2 text-[12px] text-red-400">{uploadError}</p>
+                )}
               </div>
 
               {/* Positions */}

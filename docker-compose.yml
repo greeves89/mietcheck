@@ -40,6 +40,7 @@ services:
       - internal
     volumes:
       - pdf_storage:/app/pdfs
+      - uploads_storage:/app/uploads
 
   frontend:
     build:
@@ -71,3 +72,4 @@ networks:
 volumes:
   postgres_data:
   pdf_storage:
+  uploads_storage:

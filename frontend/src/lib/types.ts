@@ -72,6 +72,7 @@ export interface UtilityBill {
   status: "pending" | "checked" | "objection_sent";
   check_score?: number;
   notes?: string;
+  document_path?: string;
   created_at: string;
   updated_at: string;
   positions: BillPosition[];

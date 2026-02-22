@@ -84,6 +84,23 @@ export const api = {
   updateBill: (id: number, data: any) => request<any>(`/bills/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteBill: (id: number) => request<void>(`/bills/${id}`, { method: "DELETE" }),
   recheckBill: (id: number) => request<any>(`/bills/${id}/recheck`, { method: "POST" }),
+  uploadBillDocument: (id: number, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return fetch(`${API_BASE}/bills/${id}/upload`, {
+      method: "POST",
+      credentials: "include",
+      body: form,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new ApiError(res.status, err.detail || `HTTP ${res.status}`);
+      }
+      return res.json();
+    });
+  },
+  deleteBillDocument: (id: number) => request<void>(`/bills/${id}/upload`, { method: "DELETE" }),
+  getBillDocumentUrl: (id: number) => `${API_BASE}/bills/${id}/document`,
 
   // Objections
   createObjection: (billId: number, reasons: string[]) =>

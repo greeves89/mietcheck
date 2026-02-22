@@ -101,6 +101,7 @@ class UtilityBillRead(BaseModel):
     status: str
     check_score: Optional[int] = None
     notes: Optional[str] = None
+    document_path: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     positions: List[BillPositionRead] = []
