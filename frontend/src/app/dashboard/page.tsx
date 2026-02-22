@@ -11,6 +11,8 @@ import {
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { StatsCard } from "@/components/dashboard/stats-card";
+import { CostBreakdownChart } from "@/components/dashboard/cost-breakdown-chart";
+import { CostTrendChart } from "@/components/dashboard/cost-trend-chart";
 import { BillCard } from "@/components/bills/bill-card";
 import { useAuthStore } from "@/lib/auth";
 import { useBills } from "@/hooks/use-bills";
@@ -107,6 +109,20 @@ export default function DashboardPage() {
                 Upgrade
               </button>
             </motion.div>
+          )}
+
+          {/* Charts - only shown when there are bills */}
+          {bills.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div className="rounded-xl border border-foreground/[0.06] bg-card/80 backdrop-blur-sm p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-3">Kostenentwicklung</p>
+                <CostTrendChart bills={bills} />
+              </div>
+              <div className="rounded-xl border border-foreground/[0.06] bg-card/80 backdrop-blur-sm p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-3">Kostenverteilung</p>
+                <CostBreakdownChart bills={bills} />
+              </div>
+            </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
