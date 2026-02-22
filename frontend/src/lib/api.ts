@@ -102,6 +102,21 @@ export const api = {
   deleteBillDocument: (id: number) => request<void>(`/bills/${id}/upload`, { method: "DELETE" }),
   getBillDocumentUrl: (id: number) => `${API_BASE}/bills/${id}/document`,
   getBillReportUrl: (id: number) => `${API_BASE}/bills/${id}/report`,
+  ocrExtractBill: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return fetch(`${API_BASE}/bills/ocr-extract`, {
+      method: "POST",
+      credentials: "include",
+      body: form,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new ApiError(res.status, err.detail || `HTTP ${res.status}`);
+      }
+      return res.json();
+    });
+  },
 
   // Objections
   createObjection: (billId: number, reasons: string[]) =>
@@ -122,6 +137,11 @@ export const api = {
   getAdminFeedback: (status?: string) => request<any[]>(`/admin/feedback${status ? `?status=${status}` : ""}`),
   updateAdminFeedback: (id: number, data: any) => request<any>(`/admin/feedback/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   testSmtp: (toEmail: string) => request<any>(`/admin/smtp/test?to_email=${encodeURIComponent(toEmail)}`, { method: "POST" }),
+
+  // Mietvertrag-Check
+  getMietvertragKlauseln: () => request<any>("/mietvertrag/klauseln"),
+  checkMietvertrag: (data: any) =>
+    request<any>("/mietvertrag/check", { method: "POST", body: JSON.stringify(data) }),
 
   // Mietpreisbremse
   checkMietpreisbremse: (data: any) =>

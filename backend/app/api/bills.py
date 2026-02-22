@@ -3,11 +3,14 @@ from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
-from typing import List
+from typing import List, Optional
 from datetime import date
 import os
 import uuid
+import base64
+import json
 import aiofiles
+import httpx
 from app.database import get_db
 from app.models.user import User
 from app.models.utility_bill import UtilityBill
@@ -19,6 +22,7 @@ from app.schemas.utility_bill import (
 )
 from app.core.auth import get_current_user
 from app.core.bill_checker import run_all_checks
+from app.config import settings
 
 UPLOADS_DIR = "/app/uploads"
 ALLOWED_TYPES = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
@@ -380,6 +384,154 @@ async def download_document(
         bill.document_path,
         filename=os.path.basename(bill.document_path),
     )
+
+
+@router.post("/ocr-extract")
+async def ocr_extract_bill(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Upload a photo or scan of a utility bill (Nebenkostenabrechnung) and extract
+    structured data using AI vision. Returns pre-filled form data.
+    """
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Ungültiger Dateityp. Erlaubt: PDF, JPEG, PNG, WebP",
+        )
+
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="Datei zu groß. Maximal 10 MB erlaubt.")
+
+    if not settings.ANTHROPIC_API_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="OCR-Service nicht konfiguriert. Bitte ANTHROPIC_API_KEY setzen.",
+        )
+
+    # Determine media type for vision API
+    media_type = file.content_type
+    # For PDF, use document type; for images, use image type
+    if media_type == "application/pdf":
+        source_type = "document"
+        encoded = base64.standard_b64encode(contents).decode("utf-8")
+    else:
+        source_type = "image"
+        encoded = base64.standard_b64encode(contents).decode("utf-8")
+
+    prompt = """Du analysierst eine deutsche Nebenkostenabrechnung (Betriebskostenabrechnung).
+Extrahiere alle sichtbaren Daten und gib sie als JSON zurück.
+
+Antworte NUR mit validem JSON in diesem Format (keine anderen Texte):
+{
+  "billing_year": <Jahr als Zahl oder null>,
+  "billing_period_start": "<YYYY-MM-DD oder null>",
+  "billing_period_end": "<YYYY-MM-DD oder null>",
+  "received_date": "<YYYY-MM-DD oder null>",
+  "total_costs": <Gesamtkosten als Zahl oder null>,
+  "total_advance_paid": <Geleistete Vorauszahlungen als Zahl oder null>,
+  "result_amount": <Nachzahlung (positiv) oder Guthaben (negativ) als Zahl oder null>,
+  "positions": [
+    {
+      "category": "<eine von: heating, hot_water, water_sewage, garbage, building_insurance, liability_insurance, elevator, garden, cleaning, caretaker, cable_tv, building_lighting, other>",
+      "name": "<Bezeichnung wie auf Abrechnung>",
+      "total_amount": <Betrag als Zahl>,
+      "tenant_amount": <Mieteranteil als Zahl oder null>
+    }
+  ]
+}
+
+Kategorien-Zuordnung:
+- heating: Heizkosten, Wärme, Fernwärme, Heizöl, Gas (Heizung)
+- hot_water: Warmwasser, Warmwasserversorgung
+- water_sewage: Kaltwasser, Wasser, Abwasser, Kanalgebühren, Entwässerung
+- garbage: Müll, Abfall, Müllentsorgung, Entsorgung
+- building_insurance: Gebäudeversicherung, Feuerversicherung, Wohngebäudeversicherung
+- liability_insurance: Haftpflichtversicherung
+- elevator: Aufzug, Fahrstuhl, Lift
+- garden: Gartenpflege, Grünflächenpflege, Gartenbau
+- cleaning: Hausreinigung, Treppenreinigung, Gemeinschaftsreinigung
+- caretaker: Hausmeister, Hauswart, Hausbetreuung
+- cable_tv: Kabelfernsehen, Antenne, Gemeinschaftsantenne, Breitband
+- building_lighting: Hausbeleuchtung, Flurbeleuchtung, Außenbeleuchtung
+- other: Alles andere (Grundsteuer, Sonstiges, etc.)
+
+Extrahiere alle Positionen die du erkennst. Falls du einen Wert nicht sicher erkennst, setze null."""
+
+    try:
+        if source_type == "document":
+            # PDF: use document source type
+            message_content = [
+                {
+                    "type": "document",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "application/pdf",
+                        "data": encoded,
+                    },
+                },
+                {"type": "text", "text": prompt},
+            ]
+        else:
+            # Image: use image source type
+            message_content = [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": media_type,
+                        "data": encoded,
+                    },
+                },
+                {"type": "text", "text": prompt},
+            ]
+
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": settings.ANTHROPIC_API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                    "anthropic-beta": "pdfs-2024-09-25",
+                },
+                json={
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": 2048,
+                    "messages": [{"role": "user", "content": message_content}],
+                },
+            )
+
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=502,
+                detail=f"OCR-Service Fehler: {response.status_code}",
+            )
+
+        result = response.json()
+        text = result["content"][0]["text"].strip()
+
+        # Strip markdown code block if present
+        if text.startswith("```"):
+            lines = text.split("\n")
+            text = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
+
+        extracted = json.loads(text)
+        return extracted
+
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=422,
+            detail="OCR konnte die Abrechnung nicht lesen. Bitte laden Sie ein klareres Bild hoch.",
+        )
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="OCR-Anfrage hat zu lange gedauert. Bitte erneut versuchen.")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"OCR-Fehler: {str(e)}")
 
 
 @router.get("/{bill_id}/report")

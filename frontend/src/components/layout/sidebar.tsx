@@ -16,6 +16,7 @@ import {
   Scale,
   BookOpen,
   Gavel,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/theme-provider";
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/mietpreisbremse", label: "Mietpreisbremse", icon: Scale },
   { href: "/betriebskosten-assistent", label: "BK-Assistent", icon: BookOpen },
   { href: "/mietrecht", label: "Mietrecht-Checks", icon: Gavel },
+  { href: "/mietvertrag", label: "Vertragsprüfung", icon: ClipboardCheck },
   { href: "/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/settings", label: "Einstellungen", icon: Settings },
 ];

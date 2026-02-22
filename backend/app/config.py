@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     STRIPE_SUCCESS_URL: str = "http://localhost/dashboard?upgraded=true"
     STRIPE_CANCEL_URL: str = "http://localhost/settings?cancelled=true"
 
+    # OCR (Anthropic API for bill image extraction)
+    ANTHROPIC_API_KEY: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = True
