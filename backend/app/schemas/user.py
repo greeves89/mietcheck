@@ -29,6 +29,7 @@ class UserRead(BaseModel):
     name: str
     role: str
     is_active: bool
+    is_verified: bool = False
     address_street: Optional[str] = None
     address_zip: Optional[str] = None
     address_city: Optional[str] = None

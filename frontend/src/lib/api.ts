@@ -44,6 +44,28 @@ export const api = {
     }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
   refresh: () => request<{ access_token: string }>("/auth/refresh", { method: "POST" }),
+  verifyEmail: (token: string) =>
+    request<{ message: string }>(`/auth/verify-email?token=${encodeURIComponent(token)}`),
+  resendVerification: (email: string) =>
+    request<{ message: string }>("/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  forgotPassword: (email: string) =>
+    request<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  resetPassword: (token: string, new_password: string) =>
+    request<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, new_password }),
+    }),
+  changePassword: (current_password: string, new_password: string) =>
+    request<{ message: string }>("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ current_password, new_password }),
+    }),
 
   // Users
   getMe: () => request<any>("/users/me"),

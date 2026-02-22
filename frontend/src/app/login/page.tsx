@@ -101,12 +101,17 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-4 text-center text-[13px] text-muted-foreground">
-            Noch kein Konto?{" "}
-            <Link href="/register" className="text-primary hover:underline font-medium">
-              Registrieren
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <p className="text-center text-[13px] text-muted-foreground">
+              Noch kein Konto?{" "}
+              <Link href="/register" className="text-primary hover:underline font-medium">
+                Registrieren
+              </Link>
+            </p>
+            <Link href="/forgot-password" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+              Passwort vergessen?
             </Link>
-          </p>
+          </div>
         </div>
       </motion.div>
     </div>
