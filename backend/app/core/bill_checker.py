@@ -101,12 +101,7 @@ def check_deadline(bill: UtilityBill) -> List[CheckItem]:
             "Tragen Sie das Datum nach, an dem Sie die Abrechnung erhalten haben.",
         )]
 
-    deadline = date(
-        bill.billing_period_end.year + 1,
-        bill.billing_period_end.month,
-        bill.billing_period_end.day,
-    )
-    # Handle leap year edge case
+    # Handle leap year edge case (e.g. Feb 29 has no equivalent in non-leap years)
     try:
         deadline = bill.billing_period_end.replace(year=bill.billing_period_end.year + 1)
     except ValueError:
