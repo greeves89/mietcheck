@@ -9,6 +9,7 @@ import {
   PlusCircle, ArrowRight, Home, Star, Crown
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { CostBreakdownChart } from "@/components/dashboard/cost-breakdown-chart";
@@ -50,9 +51,10 @@ export default function DashboardPage() {
   const recentBills = bills.slice(0, 5);
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col min-h-0">
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-0">
         <Header />
         <main className="flex-1 overflow-y-auto p-6">
           {/* Upgrade success banner */}
@@ -200,5 +202,6 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+    </MobileNavProvider>
   );
 }

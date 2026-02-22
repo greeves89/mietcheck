@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { Scale, AlertTriangle, CheckCircle, Info, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -100,9 +101,10 @@ export default function MietpreisbremseSeite() {
   };
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+      <div className="flex-1 md:ml-[260px] flex flex-col overflow-hidden">
         <Header
           title="Mietpreisbremse-Check"
           subtitle="Prüfen Sie ob Ihre Miete die zulässige Höchstgrenze gemäß §556d BGB überschreitet"
@@ -298,5 +300,6 @@ export default function MietpreisbremseSeite() {
         </main>
       </div>
     </div>
+    </MobileNavProvider>
   );
 }

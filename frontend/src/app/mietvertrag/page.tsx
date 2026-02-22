@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sidebar } from '@/components/layout/sidebar'
+import { MobileNavProvider } from '@/components/layout/mobile-nav-context'
 import { Header } from '@/components/layout/header'
 import { api } from '@/lib/api'
 import {
@@ -96,19 +97,22 @@ export default function MietvertragPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-background overflow-hidden">
+      <MobileNavProvider>
+    <div className="flex h-screen bg-background overflow-hidden">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex items-center justify-center">
+        <div className="flex-1 md:ml-[260px] flex items-center justify-center">
           <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
+      </MobileNavProvider>
     )
   }
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col min-h-0">
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-0">
         <Header
           title="Mietvertragprüfung"
           subtitle="Prüfung auf unwirksame Klauseln nach aktueller BGH-Rechtsprechung"
@@ -303,5 +307,6 @@ export default function MietvertragPage() {
         </main>
       </div>
     </div>
+    </MobileNavProvider>
   )
 }

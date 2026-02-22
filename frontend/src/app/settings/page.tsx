@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { motion } from "framer-motion";
 import { Save, Loader2, AlertTriangle, CheckCircle2, Trash2, Download, Crown, Check, X, Lock } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { useAuthStore } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
@@ -128,9 +129,10 @@ export default function SettingsPage() {
   const isPremium = user?.subscription_tier === "premium";
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col min-h-0">
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-0">
         <Header />
         <main className="flex-1 overflow-y-auto p-6 max-w-2xl">
           <div className="mb-6">
@@ -360,5 +362,6 @@ export default function SettingsPage() {
         </main>
       </div>
     </div>
+    </MobileNavProvider>
   );
 }

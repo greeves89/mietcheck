@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { PlusCircle, FileSearch, Filter } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { BillCard } from "@/components/bills/bill-card";
 import { YearComparison } from "@/components/bills/year-comparison";
@@ -13,9 +14,10 @@ export default function BillsPage() {
   const { bills, isLoading } = useBills();
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col min-h-0">
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-0">
         <Header />
         <main className="flex-1 overflow-y-auto p-6">
           <div className="flex items-center justify-between mb-6">
@@ -68,5 +70,6 @@ export default function BillsPage() {
         </main>
       </div>
     </div>
+    </MobileNavProvider>
   );
 }

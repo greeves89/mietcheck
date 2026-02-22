@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Users, Shield, Crown, Ban, Check, Edit2, X, Loader2 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { api, ApiError } from "@/lib/api";
 import { User } from "@/lib/types";
@@ -50,9 +51,10 @@ export default function AdminUsersPage() {
   };
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col min-h-0">
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-0">
         <Header />
         <main className="flex-1 overflow-y-auto p-6">
           <div className="mb-6">
@@ -175,5 +177,6 @@ export default function AdminUsersPage() {
         </Dialog.Portal>
       </Dialog.Root>
     </div>
+    </MobileNavProvider>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sidebar } from '@/components/layout/sidebar'
+import { MobileNavProvider } from '@/components/layout/mobile-nav-context'
 import { Header } from '@/components/layout/header'
 import { api } from '@/lib/api'
 import {
@@ -149,9 +150,10 @@ export default function MietrechtPage() {
   }
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col min-h-0">
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-0">
         <Header
           title="Mietrecht-Checks"
           subtitle="Mietwucher, Mieterhöhung, Kaution – Ihre Rechte als Mieter"
@@ -595,5 +597,6 @@ export default function MietrechtPage() {
         </main>
       </div>
     </div>
+    </MobileNavProvider>
   )
 }

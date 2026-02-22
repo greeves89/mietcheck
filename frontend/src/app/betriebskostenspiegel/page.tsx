@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import {
   BarChart3,
@@ -120,9 +121,10 @@ export default function BetriebskostenspiegelPage() {
     : null;
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+      <div className="flex-1 md:ml-[260px] flex flex-col overflow-hidden">
         <Header
           title="Regionaler Betriebskostenspiegel"
           subtitle="Vergleichen Sie Ihre Nebenkosten mit dem regionalen Durchschnitt (DMB Betriebskostenspiegel)"
@@ -329,5 +331,6 @@ export default function BetriebskostenspiegelPage() {
         </main>
       </div>
     </div>
+    </MobileNavProvider>
   );
 }

@@ -9,6 +9,7 @@ import {
   Upload, X, Paperclip
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { CheckResults } from "@/components/bills/check-results";
 import { useBill } from "@/hooks/use-bills";
@@ -114,9 +115,10 @@ export default function BillDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-background overflow-hidden">
+      <MobileNavProvider>
+    <div className="flex h-screen bg-background overflow-hidden">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col min-h-0">
+        <div className="flex-1 md:ml-[260px] flex flex-col min-h-0">
           <Header />
           <main className="flex-1 overflow-y-auto p-6">
             <div className="space-y-4">
@@ -125,14 +127,16 @@ export default function BillDetailPage() {
           </main>
         </div>
       </div>
+      </MobileNavProvider>
     );
   }
 
   if (!bill || error) {
     return (
-      <div className="flex h-screen bg-background overflow-hidden">
+      <MobileNavProvider>
+    <div className="flex h-screen bg-background overflow-hidden">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex items-center justify-center">
+        <div className="flex-1 md:ml-[260px] flex items-center justify-center">
           <div className="text-center">
             <p className="text-muted-foreground">Abrechnung nicht gefunden</p>
             <Link href="/bills" className="mt-3 inline-flex items-center gap-2 text-primary hover:underline">
@@ -141,15 +145,17 @@ export default function BillDetailPage() {
           </div>
         </div>
       </div>
+      </MobileNavProvider>
     );
   }
 
   const isPremium = user?.subscription_tier === "premium" || user?.role === "admin";
 
   return (
+    <MobileNavProvider>
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="flex-1 ml-[260px] flex flex-col min-h-0">
+      <div className="flex-1 md:ml-[260px] flex flex-col min-h-0">
         <Header />
         <main className="flex-1 overflow-y-auto p-6">
           {/* Back + actions */}
@@ -405,5 +411,6 @@ export default function BillDetailPage() {
         </div>
       )}
     </div>
+    </MobileNavProvider>
   );
 }
