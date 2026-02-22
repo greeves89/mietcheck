@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   FileSearch, AlertTriangle, TrendingUp, FileText,
-  PlusCircle, ArrowRight, Home, Star
+  PlusCircle, ArrowRight, Home, Star, Crown
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -14,12 +15,30 @@ import { BillCard } from "@/components/bills/bill-card";
 import { useAuthStore } from "@/lib/auth";
 import { useBills } from "@/hooks/use-bills";
 import { useContracts } from "@/hooks/use-contracts";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
   const { bills, isLoading: billsLoading } = useBills();
   const { contracts } = useContracts();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("upgraded") === "true") {
+      // Refresh user profile to reflect new subscription status
+      api.getMe().then((freshUser) => {
+        setUser(freshUser);
+        setUpgradeSuccess(true);
+        setTimeout(() => setUpgradeSuccess(false), 5000);
+      }).catch(() => {});
+      // Remove query param without page reload
+      router.replace("/dashboard", { scroll: false });
+    }
+  }, [searchParams, setUser, router]);
 
   const totalErrors = bills.reduce((sum, b) => sum + b.check_results.filter(r => r.severity === "error").length, 0);
   const avgScore = bills.length > 0
@@ -34,6 +53,21 @@ export default function DashboardPage() {
       <div className="flex-1 ml-[260px] flex flex-col min-h-0">
         <Header />
         <main className="flex-1 overflow-y-auto p-6">
+          {/* Upgrade success banner */}
+          {upgradeSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mb-4 flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3"
+            >
+              <Crown className="h-4 w-4 text-amber-400 flex-shrink-0" />
+              <p className="text-sm font-medium text-amber-300">
+                Willkommen bei Premium! Alle Funktionen sind jetzt freigeschaltet.
+              </p>
+            </motion.div>
+          )}
+
           {/* Welcome */}
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
             <h2 className="text-xl font-bold">Willkommen, {user?.name?.split(" ")[0]}</h2>
