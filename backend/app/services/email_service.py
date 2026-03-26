@@ -4,7 +4,7 @@ import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ FONT           = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,A
 
 
 def _email_wrapper(content: str, app_name: str = "MietCheck", tagline: str = "Nebenkostenabrechnung prüfen & verstehen") -> str:
-    year = datetime.now().year
+    year = datetime.now(timezone.utc).year
     return f"""<!DOCTYPE html>
 <html lang="de">
 <head>
