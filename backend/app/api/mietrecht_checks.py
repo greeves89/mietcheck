@@ -5,7 +5,7 @@ Weitere Mietrecht-Checks:
 - Kautionsrückforderungs-Assistent: Prüfung Rückbehalt, Frist, Schreiben
 """
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import date
 from app.core.auth import get_current_user
@@ -44,7 +44,7 @@ STADTMIETEN = {
 # ─────────────────────────────────────────────────────────────
 class MietwucherRequest(BaseModel):
     stadt: str
-    wohnflaeche_qm: float
+    wohnflaeche_qm: float = Field(gt=0)
     aktuelle_monatsmiete: float
     baujahr: Optional[int] = None
     is_furnished: bool = False
@@ -170,7 +170,7 @@ async def check_mietwucher(
 # ─────────────────────────────────────────────────────────────
 class MieterhoehungRequest(BaseModel):
     stadt: str
-    wohnflaeche_qm: float
+    wohnflaeche_qm: float = Field(gt=0)
     aktuelle_monatsmiete: float
     neue_monatsmiete: float
     letzte_erhoehung_datum: Optional[str] = None  # ISO date string
