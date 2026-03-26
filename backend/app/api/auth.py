@@ -3,6 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from datetime import datetime, timezone, timedelta
 import secrets
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.database import get_db
 from app.models.user import User
@@ -61,15 +64,15 @@ async def register(data: UserCreate, response: Response, db: AsyncSession = Depe
     try:
         html, text = build_verification_email(user.name, verify_url)
         await send_email(user.email, "E-Mail verifizieren – MietCheck", html, text)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Email send failed: %s", e)
 
     # Send welcome email after verification would be ideal, but send now for UX
     try:
         html, text = build_welcome_email(user.name)
         await send_email(user.email, "Willkommen bei MietCheck!", html, text)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Email send failed: %s", e)
 
     # Auto-login after registration
     access_token = create_access_token(user.id, user.role)
@@ -174,8 +177,8 @@ async def resend_verification(data: dict, db: AsyncSession = Depends(get_db)):
         try:
             html, text = build_verification_email(user.name, verify_url)
             await send_email(user.email, "E-Mail verifizieren – MietCheck", html, text)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Email send failed: %s", e)
 
     return {"message": "Falls ein unverifiziertes Konto existiert, wurde die E-Mail erneut gesendet."}
 
@@ -196,8 +199,8 @@ async def forgot_password(data: dict, db: AsyncSession = Depends(get_db)):
         try:
             html, text = build_password_reset_email(user.name, reset_url)
             await send_email(user.email, "Passwort zurücksetzen – MietCheck", html, text)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Email send failed: %s", e)
 
     return {"message": "Falls ein Konto mit dieser E-Mail existiert, wurde eine E-Mail gesendet."}
 
