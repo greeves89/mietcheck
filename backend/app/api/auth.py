@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 import secrets
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,28 @@ from app.services.email_service import (
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+# In-memory rate limiter for auth endpoints: max attempts per IP per 15 minutes
+_auth_attempts: dict[str, list[float]] = defaultdict(list)
+_LOGIN_LIMIT = 10
+_REGISTER_LIMIT = 5
+_AUTH_WINDOW = 15 * 60  # 15 minutes
+
+
+def _check_auth_rate_limit(request: Request, limit: int):
+    ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    window_start = now - _AUTH_WINDOW
+    attempts = [t for t in _auth_attempts[ip] if t > window_start]
+    _auth_attempts[ip] = attempts
+    if len(attempts) >= limit:
+        retry_after = int(_AUTH_WINDOW - (now - attempts[0]))
+        raise HTTPException(
+            status_code=429,
+            detail=f"Zu viele Versuche. Bitte in {retry_after // 60} Minuten erneut versuchen.",
+        )
+    _auth_attempts[ip].append(now)
+
+
 COOKIE_SETTINGS = {
     "httponly": True,
     "samesite": "lax",
@@ -37,7 +61,8 @@ def _set_cookies(response: Response, access_token: str, refresh_token: str) -> N
 
 
 @router.post("/register", response_model=UserRead, status_code=201)
-async def register(data: UserCreate, response: Response, db: AsyncSession = Depends(get_db)):
+async def register(request: Request, data: UserCreate, response: Response, db: AsyncSession = Depends(get_db)):
+    _check_auth_rate_limit(request, _REGISTER_LIMIT)
     result = await db.execute(select(User).where(User.email == data.email.lower()))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="E-Mail bereits registriert")
@@ -83,7 +108,8 @@ async def register(data: UserCreate, response: Response, db: AsyncSession = Depe
 
 
 @router.post("/login")
-async def login(data: LoginRequest, response: Response, db: AsyncSession = Depends(get_db)):
+async def login(request: Request, data: LoginRequest, response: Response, db: AsyncSession = Depends(get_db)):
+    _check_auth_rate_limit(request, _LOGIN_LIMIT)
     result = await db.execute(select(User).where(User.email == data.email.lower()))
     user = result.scalar_one_or_none()
 
