@@ -72,7 +72,11 @@ async def stripe_webhook(
         subscription_id = session.get("subscription")
 
         if user_id:
-            result = await db.execute(select(User).where(User.id == int(user_id)))
+            try:
+                uid = int(user_id)
+            except (ValueError, TypeError):
+                return {"status": "invalid user_id in metadata"}
+            result = await db.execute(select(User).where(User.id == uid))
             user = result.scalar_one_or_none()
             if user:
                 user.subscription_tier = "premium"
