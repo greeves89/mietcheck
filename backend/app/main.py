@@ -33,6 +33,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Trusted Hosts (prevents Host-Header-Injection)
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=settings.ALLOWED_HOSTS,
+)
+
 # Routes
 app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")

@@ -5,6 +5,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from datetime import date
+import logging
 import os
 import uuid
 import base64
@@ -12,6 +13,8 @@ import json
 import aiofiles
 import httpx
 from app.database import get_db
+
+logger = logging.getLogger(__name__)
 from app.models.user import User
 from app.models.utility_bill import UtilityBill
 from app.models.bill_position import BillPosition
@@ -531,6 +534,7 @@ Extrahiere alle Positionen die du erkennst. Falls du einen Wert nicht sicher erk
     except HTTPException:
         raise
     except Exception as e:
+        logger.error("OCR processing failed: %s", e)
         raise HTTPException(status_code=500, detail=f"OCR-Fehler: {str(e)}")
 
 
@@ -576,6 +580,7 @@ async def download_check_report(
             result_amount=str(bill.result_amount) if bill.result_amount else None,
         )
     except Exception as e:
+        logger.error("PDF report generation failed: %s", e)
         raise HTTPException(status_code=500, detail=f"PDF-Generierung fehlgeschlagen: {e}")
 
     return FileResponse(

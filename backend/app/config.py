@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # App
     FRONTEND_URL: str = "http://localhost"
     ENVIRONMENT: str = "production"
+    ALLOWED_HOSTS: List[str] = ["*"]
 
     # PDF storage
     PDF_STORAGE_PATH: str = "/app/pdfs"

@@ -4,7 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from typing import List
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 from app.database import get_db
 from app.models.user import User
 from app.models.utility_bill import UtilityBill
@@ -65,7 +68,8 @@ async def create_objection_letter(
             billing_year=bill.billing_year,
             objection_reasons=data.objection_reasons,
         )
-    except Exception:
+    except Exception as e:
+        logger.error("Failed to generate objection letter PDF: %s", e)
         pdf_path = None
 
     letter = ObjectionLetter(
