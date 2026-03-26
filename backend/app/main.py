@@ -36,7 +36,11 @@ app.add_middleware(
 # Trusted Hosts (prevents Host-Header-Injection)
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=settings.ALLOWED_HOSTS,
+    allowed_hosts=[
+        settings.FRONTEND_URL.replace("http://", "").replace("https://", "").split(":")[0],
+        "localhost",
+        "127.0.0.1",
+    ],
 )
 
 # Routes
