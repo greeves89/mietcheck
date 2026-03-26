@@ -1,4 +1,5 @@
 """GDPR/DSGVO compliance endpoints."""
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,7 +45,7 @@ async def export_my_data(
         return {c.name: str(getattr(obj, c.name)) for c in obj.__table__.columns}
 
     export_data = {
-        "exported_at": __import__("datetime").datetime.utcnow().isoformat(),
+        "exported_at": datetime.now(timezone.utc).isoformat(),
         "user": to_dict(current_user),
         "contracts": [to_dict(c) for c in contracts],
         "bills": [
