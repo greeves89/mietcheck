@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
+from starlette.background import BackgroundTask
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
@@ -583,8 +584,15 @@ async def download_check_report(
         logger.error("PDF report generation failed: %s", e)
         raise HTTPException(status_code=500, detail=f"PDF-Generierung fehlgeschlagen: {e}")
 
+    def cleanup(path: str):
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
     return FileResponse(
         pdf_path,
         filename=f"pruefbericht_{bill.billing_year}.pdf",
         media_type="application/pdf",
+        background=BackgroundTask(cleanup, pdf_path),
     )
