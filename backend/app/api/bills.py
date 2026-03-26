@@ -536,7 +536,7 @@ Extrahiere alle Positionen die du erkennst. Falls du einen Wert nicht sicher erk
         raise
     except Exception as e:
         logger.error("OCR processing failed: %s", e)
-        raise HTTPException(status_code=500, detail=f"OCR-Fehler: {str(e)}")
+        raise HTTPException(status_code=500, detail="OCR-Fehler: Bitte erneut versuchen.")
 
 
 @router.get("/{bill_id}/report")
@@ -582,7 +582,7 @@ async def download_check_report(
         )
     except Exception as e:
         logger.error("PDF report generation failed: %s", e)
-        raise HTTPException(status_code=500, detail=f"PDF-Generierung fehlgeschlagen: {e}")
+        raise HTTPException(status_code=500, detail="PDF-Generierung fehlgeschlagen. Bitte erneut versuchen.")
 
     def cleanup(path: str):
         try:

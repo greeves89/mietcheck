@@ -89,6 +89,7 @@ async def stripe_webhook(
                             from datetime import timedelta
                             user.subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=365)
                     except Exception:
+                        logger.warning("Failed to retrieve Stripe subscription period_end, falling back to 365 days", exc_info=True)
                         from datetime import timedelta
                         user.subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=365)
                 await db.commit()

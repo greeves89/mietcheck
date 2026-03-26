@@ -45,3 +45,16 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+if settings.SECRET_KEY == "super-secret-change-in-production-please":
+    import logging
+    logging.getLogger(__name__).warning(
+        "SECRET_KEY is using the insecure default value! "
+        "Set SECRET_KEY in your .env file for production."
+    )
+if settings.REFRESH_SECRET_KEY == "refresh-secret-change-in-production":
+    import logging
+    logging.getLogger(__name__).warning(
+        "REFRESH_SECRET_KEY is using the insecure default value! "
+        "Set REFRESH_SECRET_KEY in your .env file for production."
+    )
